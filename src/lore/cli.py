@@ -17,6 +17,12 @@ def cli():
 
 
 @cli.command()
+def help():
+    """Show all commands and options."""
+    ui.render_help()
+
+
+@cli.command()
 @click.argument("content")
 @click.option("--file", "-f", "files", multiple=True, metavar="FILE",
               help="Link this entry to a file path (can repeat).")

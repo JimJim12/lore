@@ -140,6 +140,48 @@ def render_error(message: str) -> None:
     console.print(f"[bold red]Error:[/bold red] {message}")
 
 
+def render_help() -> None:
+    table = Table(box=box.SIMPLE, show_header=False, padding=(0, 2))
+    table.add_column(style="bold cyan", no_wrap=True)
+    table.add_column(style="dim", no_wrap=True)
+    table.add_column()
+
+    commands = [
+        ("add",    "<note>",              "Save a decision. Claude extracts tags, importance, and category."),
+        ("",       "--file/-f <path>",    "Link to a file (repeatable)"),
+        ("",       "--tag/-t <tag>",      "Add a tag manually"),
+        ("find",   "<query>",             "Semantic search. Claude expands query and re-ranks results."),
+        ("why",    "<topic>",             "Shorthand for find, framed as 'why <topic>'"),
+        ("list",   "",                    "Recent entries table"),
+        ("",       "--tag/-t <tag>",      "Filter by tag"),
+        ("",       "--limit/-n <n>",      "Max rows (default 20)"),
+        ("show",   "<id>",               "Full detail for one entry"),
+        ("delete", "<id>",               "Delete an entry (prompts to confirm)"),
+        ("",       "--yes/-y",            "Skip confirmation"),
+        ("link",   "<path> <id>",         "Link a file to an existing entry"),
+        ("",       "--note/-n <text>",    "Describe why the file is relevant"),
+        ("files",  "<path>",             "All entries linked to a file"),
+        ("export", "",                    "Dump all entries as Markdown"),
+        ("",       "--output/-o <file>",  "Write to file instead of stdout"),
+        ("sync",   "",                    "Write top entries to MEMORY.md"),
+        ("",       "--dry-run",           "Preview without writing"),
+        ("",       "--top <n>",           "Number of entries to include (default 10)"),
+    ]
+
+    for cmd, args, desc in commands:
+        table.add_row(cmd, args, desc)
+
+    console.print()
+    console.print(Panel(
+        table,
+        title="[bold]lore[/bold] — local knowledge management for developers",
+        subtitle="[dim]lore <command> --help for full options[/dim]",
+        border_style="cyan",
+        padding=(1, 2),
+    ))
+    console.print()
+
+
 def render_confirm_delete(entry: Entry) -> None:
     console.print(
         Panel(

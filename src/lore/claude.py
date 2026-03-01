@@ -4,10 +4,31 @@ import json
 import os
 
 from dotenv import load_dotenv
+from rich.console import Console
 
 load_dotenv()  # loads .env from cwd or any parent directory
 
 MODEL = "claude-haiku-4-5-20251001"
+_err = Console(stderr=True)
+
+
+def _warn(exc: Exception) -> None:
+    """Print a dim warning to stderr describing why a Claude call failed."""
+    try:
+        import anthropic  # noqa: PLC0415
+        if isinstance(exc, anthropic.RateLimitError):
+            label = "rate limit reached"
+        elif isinstance(exc, anthropic.AuthenticationError):
+            label = "invalid API key"
+        elif isinstance(exc, anthropic.APIConnectionError):
+            label = "connection error"
+        elif isinstance(exc, anthropic.APIStatusError):
+            label = f"API error {exc.status_code}"
+        else:
+            label = type(exc).__name__
+    except ImportError:
+        label = type(exc).__name__
+    _err.print(f"[yellow]⚠ Claude:[/yellow] [dim]{label} — using fallback[/dim]")
 
 
 def _client():
@@ -58,7 +79,8 @@ def extract_tags(content: str) -> dict | None:
             if text.startswith("json"):
                 text = text[4:]
         return json.loads(text)
-    except Exception:
+    except Exception as e:
+        _warn(e)
         return None
 
 
@@ -96,7 +118,8 @@ def expand_query(query: str) -> dict | None:
             if text.startswith("json"):
                 text = text[4:]
         return json.loads(text)
-    except Exception:
+    except Exception as e:
+        _warn(e)
         return None
 
 
@@ -140,7 +163,8 @@ def rerank(query: str, candidates: list[dict]) -> list[dict] | None:
             if text.startswith("json"):
                 text = text[4:]
         return json.loads(text)
-    except Exception:
+    except Exception as e:
+        _warn(e)
         return None
 
 
@@ -179,5 +203,6 @@ def generate_memory_summary(entries: list[dict]) -> str | None:
             ],
         )
         return resp.content[0].text.strip()
-    except Exception:
+    except Exception as e:
+        _warn(e)
         return None
